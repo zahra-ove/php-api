@@ -2,8 +2,9 @@
 
 namespace PHPApi\Code;
 
-readonly class Database
+class Database
 {
+    private null|\PDO $conn = null;
     public function __construct(
         private string $host,
         private string $database,
@@ -16,13 +17,17 @@ readonly class Database
     {
 
         try {
-            $dsn = "mysql:host={$this->host};dbname={$this->database};charset=utf8";
-            return new \PDO($dsn, 'zizi', '123456', [
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-                \PDO::ATTR_EMULATE_PREPARES => false,
-                \PDO::ATTR_STRINGIFY_FETCHES => false,
+            if($this->conn == null) {
+                $dsn = "mysql:host={$this->host};dbname={$this->database};charset=utf8";
+                $this->conn = new \PDO($dsn, 'zizi', '123456', [
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                    \PDO::ATTR_EMULATE_PREPARES => false,
+                    \PDO::ATTR_STRINGIFY_FETCHES => false,
 
-            ]);
+                ]);
+            }
+
+           return $this->conn;
 
         } catch (\PDOException $e) {
             echo "Connection failed: " . $e->getMessage();

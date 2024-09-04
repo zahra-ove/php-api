@@ -8,7 +8,7 @@ class ErrorHandler
         int $errono,
         string $errstr,
         string $errfile,
-        string $errline): void
+        int $errline): void
     {
         throw new \ErrorException($errstr, 0, $errono, $errfile, $errline);
     }

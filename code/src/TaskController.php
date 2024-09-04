@@ -4,7 +4,8 @@ namespace PHPApi\Code;
 
 class TaskController
 {
-    public function __construct(private readonly TaskGateway $taskGateway)
+    public function __construct(private readonly TaskGateway $taskGateway,
+                                private readonly int $user_id)
     {
     }
 
@@ -13,7 +14,7 @@ class TaskController
         if($id === null) {
             if ($method === 'GET') {
 
-                return  json_encode($this->taskGateway->getAll());
+                return  json_encode($this->taskGateway->getAllForUser($this->user_id));
             } elseif ($method === 'POST') {
 
                 $data = (array) json_decode(file_get_contents("php://input"));
@@ -22,7 +23,7 @@ class TaskController
                     return $this->respondUnprocessableEntity($errors);
                 }
 
-                $id = $this->taskGateway->create($data);
+                $id = $this->taskGateway->createForUser($data, $this->user_id);
 
                 return $this->respondCreated($id);
             } else {
@@ -32,25 +33,25 @@ class TaskController
 
         } else {
 
-            $task = $this->taskGateway->get($id);
-            if($task === false) {
-                return $this->respondNotFound($id);
-            }
 
             switch($method) {
                 case "GET":
-                    return  json_encode($task);
+                    $task = $this->taskGateway->getForUser($id, $this->user_id);
+                    if($task === false) {
+                        return $this->respondNotFound($id);
+                    }
+                    return json_encode($task);
 
                 case "PATCH":
                     $data = (array) json_decode(file_get_contents("php://input"));
                     if( !empty($errors = $this->validateTask($data, false)) ) {
                         return $this->respondUnprocessableEntity($errors);
                     }
-                    $rows = $this->taskGateway->update($id, $data);
+                    $rows = $this->taskGateway->updateForUser($id, $data, $this->user_id);
                     return json_encode(["message"=> "Task Updated", "rows" => $rows]);
 
                 case "DELETE":
-                    $rows = $this->taskGateway->delete($id);
+                    $rows = $this->taskGateway->deleteForUser($id, $this->user_id);
                     return json_encode(["message" => "Task Deleted", "rows" => $rows]);
 
                 default:
