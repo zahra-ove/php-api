@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use PHPApi\Code\Auth;
 use PHPApi\Code\Database;
+use PHPApi\Code\JWTCodec;
 use PHPApi\Code\TaskController;
 use PHPApi\Code\TaskGateway;
+use PHPApi\Code\UserGateway;
 
 require __DIR__ . '/bootstrap.php';
 
@@ -13,12 +16,14 @@ $parts = explode('/', $path);
 $resource = $parts[2] ?? null;
 $id = $parts[3] ?? null;
 
-
 $database = new Database($_ENV['DB_HOST'], $_ENV['DB_NAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
 $database->getConnection();
-$auth = new \PHPApi\Code\Auth( new \PHPApi\Code\UserGateway($database));
 
-if(! $auth->authenticateAPIKey() ) {
+$userGateway = new UserGateway($database);
+$codec = new JWTCodec($_ENV['SECRET_KEY']);
+$auth = new Auth($userGateway, $codec);
+
+if(! $auth->authenticateAccessToken() ) {
     exit;
 }
 
