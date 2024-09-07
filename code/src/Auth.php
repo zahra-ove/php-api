@@ -3,6 +3,7 @@
 namespace PHPApi\Code;
 
 use PHPApi\Code\Exceptions\InvalidSignatureException;
+use PHPApi\Code\Exceptions\TokenExpiredException;
 
 class Auth
 {
@@ -48,9 +49,14 @@ class Auth
             $payload = $this->codec->decode($matches[1]);
 
         } catch(InvalidSignatureException) {
-
             http_response_code(401);
             echo json_encode(['message' => 'invalid signature.']);
+            return false;
+
+        } catch(TokenExpiredException) {
+
+            http_response_code(401);
+            echo json_encode(['message' => 'token has expired.']);
             return false;
 
         } catch(\Exception $e) {

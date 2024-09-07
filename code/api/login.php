@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use PHPApi\Code\Database;
 use PHPApi\Code\JWTCodec;
+use PHPApi\Code\RefreshTokenGateway;
 
 require __DIR__ . '/bootstrap.php';
 
@@ -44,18 +45,13 @@ if( ! password_verify($data["password"], $user["password"]) ) {
     echo json_encode(["message" => "invalid authentication2"]);
     exit;
 }
-$payload = [
-    "sub"      => $user["id"],
-    "username" => $user["username"]
-];
 
-//$access_token = base64_encode(json_encode($payload));
-//echo json_encode(["access_token" => $access_token]);
 
-$coded = new JWTCodec($_ENV['SECRET_KEY']);
-$access_token = $coded->encode($payload);
+$codec = new JWTCodec($_ENV['SECRET_KEY']);
 
-echo json_encode([
-    "access_token" => $access_token
-]);
+require __DIR__ . '/tokens.php';
+
+
+$token_gateway = new RefreshTokenGateway($database, $_ENV['SECRET_KEY']);
+$token_gateway->create($refresh_token, $refresh_token_expiry);
 

@@ -6,6 +6,7 @@ namespace PHPApi\Code;
 
 use InvalidArgumentException;
 use PHPApi\Code\Exceptions\InvalidSignatureException;
+use PHPApi\Code\Exceptions\TokenExpiredException;
 
 class JWTCodec
 {
@@ -51,7 +52,12 @@ class JWTCodec
             throw new InvalidSignatureException;
         }
 
-        return json_decode($this->base64UrlDecode($matches['payload']), true);
+        $payload = json_decode($this->base64UrlDecode($matches['payload']), true);
+        if($payload['exp'] < time()) {
+            throw new TokenExpiredException;
+        }
+
+        return $payload;
     }
 
     private function base64UrlEncoded(string $text): string
