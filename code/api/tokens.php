@@ -4,7 +4,7 @@
 $access_token = $codec->encode([
     "sub"      => $user["id"],
     "username" => $user["username"],
-    "exp"      => time() + 20,
+    "exp"      => time() + 300,
 ]);
 $refresh_token_expiry = time() + 432000;
 
